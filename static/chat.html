@@ -28,6 +28,10 @@
             username = null,
             eventSource = null;
 
+        if (usernameElement.value === 'Anon') {
+            usernameElement.value += Math.round(Math.random() * 1000);
+        }
+
         updateSubscription();
 
         function updateSubscription() {
