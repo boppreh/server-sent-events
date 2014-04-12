@@ -86,6 +86,7 @@ class Publisher(object):
 
 if __name__ == '__main__':
     # Starts an example chat application.
+    # Run this module and point your browser to http://localhost:5000
 
     import cgi
     import flask
