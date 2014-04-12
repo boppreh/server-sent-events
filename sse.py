@@ -115,6 +115,7 @@ if __name__ == '__main__':
         username = flask.request.args.get('username')
         return flask.Response(publisher.subscribe(properties=username),
                               content_type='text/event-stream')
+
     @app.route('/')
     def root():
         return app.send_static_file('chat.html')
