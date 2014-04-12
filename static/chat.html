@@ -22,7 +22,7 @@
         </form>
 
         <script type="text/javascript">
-        var chat = document.getElementById("chat"),
+        var chatElement = document.getElementById("chat"),
             usernameElement = document.getElementById("username"),
             messageElement = document.getElementById("message"),
             username = null,
@@ -47,7 +47,7 @@
 
         function publishMessage() {
             var message = messageElement.value;
-            addMessage('Me: ' + message);
+            addMessage('<strong><em>Me</em></strong>: ' + message);
             messageElement.value = "";
 
             var formData = new FormData();
@@ -65,8 +65,7 @@
         }
 
         function addMessage(message) {
-            chat.appendChild(document.createTextNode(message));
-            chat.appendChild(document.createElement('br'));
+            chatElement.innerHTML += message + '<br>'
         }
         </script>
     </body>

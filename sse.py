@@ -85,6 +85,9 @@ class Publisher(object):
             yield 'data: {}\n\n'.format(queue.get())
 
 if __name__ == '__main__':
+    # Starts an example chat application.
+
+    import cgi
     import flask
     publisher = Publisher()
 
@@ -93,13 +96,17 @@ if __name__ == '__main__':
     @app.route('/publish', methods=['POST'])
     def publish():
         sender_username = flask.request.form['username']
-        message = flask.request.form['message']
+        chat_message = flask.request.form['message']
+
+        template = '<strong>{}</strong>: {}'
+        full_message = template.format(cgi.escape(sender_username),
+                                       cgi.escape(chat_message))
 
         def m(subscriber_username):
             if subscriber_username != sender_username:
-                return sender_username + ': ' + message
-
+                return full_message
         publisher.publish(m)
+
         return ''
 
     @app.route('/subscribe')
