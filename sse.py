@@ -6,70 +6,70 @@ class Publisher(object):
     Contains a list of subscribers that can can receive updates.
 
     Each subscriber can have its own private data and may subscribe to
-    different feeds.
+    different channel.
     """
     def __init__(self):
         """
         Creates a new publisher with an empty list of subscribers.
         """
-        self.subscribers_by_feed = defaultdict(list)
+        self.subscribers_by_channel = defaultdict(list)
 
-    def _get_subscribers_lists(self, feed):
-        if isinstance(feed, str):
-            yield self.subscribers_by_feed[feed]
+    def _get_subscribers_lists(self, channel):
+        if isinstance(channel, str):
+            yield self.subscribers_by_channel[channel]
         else:
-            for feed_name in feed:
-                yield self.subscribers_by_feed[feed_name]
+            for channel_name in channel:
+                yield self.subscribers_by_channel[channel_name]
 
-    def get_subscribers(self, feed='default feed'):
+    def get_subscribers(self, channel='default channel'):
         """
-        Returns a generator of all subscribers in the given feeds.
+        Returns a generator of all subscribers in the given channel.
 
-        `feed` can either be a single feed name (e.g. "secret room") or a list
-        of feed names (e.g. "['chat', 'global announcements']"). It defaults to
-        the feed named "default feed".
+        `channel` can either be a channel name (e.g. "secret room") or a list
+        of channel names (e.g. "['chat', 'global messages']"). It defaults to
+        the channel named "default channel".
         """
-        for subscriber_list in self._get_subscribers_lists(feed):
+        for subscriber_list in self._get_subscribers_lists(channel):
             yield from subscriber_list
 
-    def publish(self, data, feed='default feed'):
+    def publish(self, data, channel='default channel'):
         """
-        Publishes data to all subscribers of the given feed.
+        Publishes data to all subscribers of the given channel.
 
-        Feed can either be a feed name (e.g. "secret room") or a list of feed
-        names (e.g. "['chat', 'global messages']"). It defaults to the feed
-        named "default feed".
+        `channel` can either be a channel name (e.g. "secret room") or a list
+        of channel names (e.g. "['chat', 'global messages']"). It defaults to
+        the channel named "default channel".
 
         If data is callable, the return of `data(properties)` will be published
         instead, for the `properties` object of each subscriber. This allows
-        for subscriber differentiation.
+        for customized events.
         """
         # Note we call `str` here instead of leaving it to each subscriber's
         # `format` call. The reason is twofold: this caches the same between
         # subscribers, and is not prone to time differences.
         if callable(data):
-            for queue, properties in self.get_subscribers(feed):
+            for queue, properties in self.get_subscribers(channel):
                 value = data(properties)
                 if value:
                     queue.put(str(value))
         else:
-            for queue, _ in self.get_subscribers(feed):
+            for queue, _ in self.get_subscribers(channel):
                 queue.put(str(data))
 
-    def subscribe(self, feed='default feed', properties=None, initial_data=[]):
+    def subscribe(self, channel='default channel', properties=None, initial_data=[]):
         """
         Subscribes to the channel, returning an infinite generator of
         Server-Sent-Events.
 
-        Feed can either be a feed name (e.g. "secret room") or a list of feed
-        names (e.g. "['chat', 'global messages']"). It defaults to the feed
-        named "default feed".
+        `channel` can either be a channel name (e.g. "secret room") or a list
+        of channel names (e.g. "['chat', 'global messages']"). It defaults to
+        the channel named "default channel".
 
         If `properties` is passed, these will be used for differentiation if a
         callable object is published (see `Publisher.publish`).
 
         If the list `initial_data` is passed, all data there will be sent
-        before the regular feed process starts.
+        before the regular channel process starts.
         """
         queue = Queue()
         properties = properties or {}
@@ -78,7 +78,7 @@ class Publisher(object):
         for data in initial_data:
             queue.put(str(data))
 
-        for subscribers_list in self._get_subscribers_lists(feed):
+        for subscribers_list in self._get_subscribers_lists(channel):
             subscribers_list.append(subscriber)
 
         while True:
