@@ -1,35 +1,23 @@
 from queue import Queue
 
-class Subscriber(object):
-    def __init__(self, properties=None):
-        self.queue = Queue()
-        self.properties = properties or {}
-
-    def send(self, data):
-        self.queue.put(str(data))
-
-    def stream(self):
-        while True:
-            data = self.queue.get()
-            print(data)
-            yield 'data: {}\n\n'.format(data)
-
 class Publisher(object):
     def __init__(self):
         self.subscribers = []
 
     def publish(self, data):
         if callable(data):
-            for subscriber in self.subscribers:
-                subscriber.send(data(subscriber.properties))
+            for queue, properties in self.subscribers:
+                queue.put(data(properties))
         else:
-            for subscriber in self.subscribers:
-                subscriber.send(data)
+            for queue, _ in self.subscribers:
+                queue.put(data)
 
     def subscribe(self, properties=None):
-        subscriber = Subscriber(properties)
-        self.subscribers.append(subscriber)
-        return subscriber.stream()
+        queue = Queue()
+        properties = properties or {}
+        self.subscribers.append((queue, properties))
+        while True:
+            yield 'data: {}\n\n'.format(queue.get())
 
 if __name__ == '__main__':
     import flask
