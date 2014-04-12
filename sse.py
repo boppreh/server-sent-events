@@ -1,4 +1,5 @@
 from queue import Queue
+from collections import defaultdict
 
 class Publisher(object):
     """
@@ -8,34 +9,57 @@ class Publisher(object):
         """
         Creates a new publisher with an empty list of subscribers.
         """
-        self.subscribers = []
+        self.subscribers_by_feed = defaultdict(list)
 
-    def publish(self, data):
+    def _get_subscribers_lists(self, feed):
+        if isinstance(feed, str):
+            yield self.subscribers_by_feed[feed]
+        else:
+            for feed_name in feed:
+                yield self.subscribers_by_feed[feed_name]
+
+    def get_subscribers(self, feed='default feed'):
+        for subscriber_list in self._get_subscribers_lists(feed):
+            yield from subscriber_list
+
+    def publish(self, data, feed='default feed'):
         """
-        Publishes data to all subscribers.
+        Publishes data to all subscribers of the given feed.
+
+        Feed can either be a feed name (e.g. "secret room") or a list of feed
+        names (e.g. "['chat', 'global messages']"). It defaults to the feed
+        named "default feed".
 
         If data is callable, the return of `data(properties)` will be published
         instead, for the `properties` object of each subscriber. This allows
         for subscriber differentiation.
         """
         if callable(data):
-            for queue, properties in self.subscribers:
+            for queue, properties in self.get_subscribers(feed):
                 queue.put(data(properties))
         else:
-            for queue, _ in self.subscribers:
+            for queue, _ in self.get_subscribers(feed):
                 queue.put(data)
 
-    def subscribe(self, properties=None):
+    def subscribe(self, feed='default feed', properties=None):
         """
         Subscribes to the channel, returning an infinite generator of
         Server-Sent-Events.
+
+        Feed can either be a feed name (e.g. "secret room") or a list of feed
+        names (e.g. "['chat', 'global messages']"). It defaults to the feed
+        named "default feed".
 
         If `properties` is passed, these will be used for differentiation if a
         callable object is published (see `Publisher.publish`).
         """
         queue = Queue()
         properties = properties or {}
-        self.subscribers.append((queue, properties))
+        subscriber = (queue, properties)
+
+        for subscribers_list in self._get_subscribers_lists(feed):
+            subscribers_list.append(subscriber)
+
         while True:
             yield 'data: {}\n\n'.format(queue.get())
 
