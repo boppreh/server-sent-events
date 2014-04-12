@@ -109,6 +109,6 @@ if __name__ == '__main__':
                               content_type='text/event-stream')
     @app.route('/')
     def root():
-        return app.send_static_file('index.html')
+        return app.send_static_file('chat.html')
 
     app.run(debug=True, threaded=True)

@@ -22,11 +22,6 @@
 
         updateSubscription();
 
-        function addMessage(message) {
-            chat.appendChild(document.createTextNode(message));
-            chat.appendChild(document.createElement('br'));
-        }
-
         function updateSubscription() {
             if (eventSource !== null) {
                 eventSource.close();
@@ -34,6 +29,8 @@
 
             username = usernameElement.value;
             
+            // By specifying our username the server can ensure we don't get
+            // our own duplicated messages.
             eventSource = new EventSource("/subscribe?username=" + username);
             eventSource.onmessage = function(e) {
                 addMessage(e.data);
@@ -41,23 +38,28 @@
         }
 
         function publishMessage() {
-            addMessage('Me: ' + messageElement.value);
+            var message = messageElement.value;
+            addMessage('Me: ' + message);
+            messageElement.value = "";
+
+            var formData = new FormData();
+            // Use username and not usernameElement.value. This ensures the
+            // user has "applied" the username modification.
+            formData.append('username', username);
+            formData.append('message', message);
 
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.open("POST", "publish", true);
-            xmlhttp.setRequestHeader('Content-type',
-                                     'application/x-www-form-urlencoded');
+            xmlhttp.send(formData);
 
-            // Use username and not usernameElement.value. This ensures the
-            // user has "applied" the username modification.
-            xmlhttp.send("username=" + username +
-                         "&message=" + messageElement.value);
-
-            messageElement.value = "";
             // Avoid page refreshing.
             return false;
         }
 
+        function addMessage(message) {
+            chat.appendChild(document.createTextNode(message));
+            chat.appendChild(document.createElement('br'));
+        }
         </script>
     </body>
 </html>
