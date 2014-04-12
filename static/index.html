@@ -1,0 +1,18 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <h1>Server sent events</h1>
+        <div id="event"></div>
+        <script type="text/javascript">
+        var eventOutputContainer = document.getElementById("event");
+        var evtSrc = new EventSource("/subscribe");
+
+        evtSrc.onmessage = function(e) {
+            console.log(e.data);
+            eventOutputContainer.innerHTML = e.data;
+        };
+
+        </script>
+    </body>
+</html>

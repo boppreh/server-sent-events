@@ -98,29 +98,8 @@ if __name__ == '__main__':
     def subscribe():
         return flask.Response(publisher.subscribe(),
                               content_type='text/event-stream')
-
     @app.route('/')
-    def index():
-        return """
-<html>
-  <head>
-  </head>
-  <body>
-    <h1>Server sent events</h1>
-    <div id="event"></div>
-    <script type="text/javascript">
-
-    var eventOutputContainer = document.getElementById("event");
-    var evtSrc = new EventSource("/subscribe");
-
-    evtSrc.onmessage = function(e) {
-        console.log(e.data);
-        eventOutputContainer.innerHTML = e.data;
-    };
-
-    </script>
-  </body>
-</html>
-        """
+    def root():
+        return app.send_static_file('index.html')
 
     app.run(debug=True, threaded=True)
