@@ -3,15 +3,37 @@
     </head>
     <body>
         <h1>Server sent events</h1>
-        <div id="event"></div>
+        <div id="chat"></div>
+        <form onsubmit="publishMessage()" action="javascript:void(0);">
+            <input type="text" id="message" size=80>
+            <input type="submit" value="Send">
+        </form>
+
         <script type="text/javascript">
-        var eventOutputContainer = document.getElementById("event");
-        var evtSrc = new EventSource("/subscribe");
+        var chat = document.getElementById("chat"),
+            evtSrc = new EventSource("/subscribe");
+
+        function addMessage(message) {
+            chat.appendChild(document.createTextNode(message));
+            chat.appendChild(document.createElement('br'));
+        }
 
         evtSrc.onmessage = function(e) {
-            console.log(e.data);
-            eventOutputContainer.innerHTML = e.data;
+            addMessage(e.data);
         };
+
+        function publishMessage() {
+            var messageElement = document.getElementById("message");
+            addMessage(messageElement.value);
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "publish", true);
+            xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xmlhttp.send("message=" + messageElement.value);
+
+            messageElement.value = "";
+            return false;
+        }
 
         </script>
     </body>

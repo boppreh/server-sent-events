@@ -88,11 +88,10 @@ if __name__ == '__main__':
 
     app = flask.Flask(__name__, static_folder='static', static_url_path='')
 
-    @app.route('/publish')
+    @app.route('/publish', methods=['POST'])
     def publish():
-        data = flask.request.args.get('data')
-        publisher.publish(data)
-        return 'Sent ' + data
+        publisher.publish(flask.request.form['message'])
+        return ''
 
     @app.route('/subscribe')
     def subscribe():
