@@ -3,6 +3,10 @@
     </head>
     <body>
         <h1>Server sent events</h1>
+        <form onsubmit="updateSubscription()" action="javascript:void(0);">
+            <input type="text" id="username" size=12 value="Anon">
+            <input type="submit" value="Change name">
+        </form>
         <div id="chat"></div>
         <form onsubmit="publishMessage()" action="javascript:void(0);">
             <input type="text" id="message" size=80>
@@ -11,27 +15,46 @@
 
         <script type="text/javascript">
         var chat = document.getElementById("chat"),
-            evtSrc = new EventSource("/subscribe");
+            usernameElement = document.getElementById("username"),
+            messageElement = document.getElementById("message"),
+            username = null,
+            eventSource = null;
+
+        updateSubscription();
 
         function addMessage(message) {
             chat.appendChild(document.createTextNode(message));
             chat.appendChild(document.createElement('br'));
         }
 
-        evtSrc.onmessage = function(e) {
-            addMessage(e.data);
-        };
+        function updateSubscription() {
+            if (eventSource !== null) {
+                eventSource.close();
+            }
+
+            username = usernameElement.value;
+            
+            eventSource = new EventSource("/subscribe?username=" + username);
+            eventSource.onmessage = function(e) {
+                addMessage(e.data);
+            };
+        }
 
         function publishMessage() {
-            var messageElement = document.getElementById("message");
-            addMessage(messageElement.value);
+            addMessage('Me: ' + messageElement.value);
 
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.open("POST", "publish", true);
-            xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-            xmlhttp.send("message=" + messageElement.value);
+            xmlhttp.setRequestHeader('Content-type',
+                                     'application/x-www-form-urlencoded');
+
+            // Use username and not usernameElement.value. This ensures the
+            // user has "applied" the username modification.
+            xmlhttp.send("username=" + username +
+                         "&message=" + messageElement.value);
 
             messageElement.value = "";
+            // Avoid page refreshing.
             return false;
         }
 

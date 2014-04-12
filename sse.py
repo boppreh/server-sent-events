@@ -49,7 +49,9 @@ class Publisher(object):
         # subscribers, and is not prone to time differences.
         if callable(data):
             for queue, properties in self.get_subscribers(feed):
-                queue.put(str(data(properties)))
+                value = data(properties)
+                if value:
+                    queue.put(str(value))
         else:
             for queue, _ in self.get_subscribers(feed):
                 queue.put(str(data))
@@ -90,12 +92,20 @@ if __name__ == '__main__':
 
     @app.route('/publish', methods=['POST'])
     def publish():
-        publisher.publish(flask.request.form['message'])
+        sender_username = flask.request.form['username']
+        message = flask.request.form['message']
+
+        def m(subscriber_username):
+            if subscriber_username != sender_username:
+                return sender_username + ': ' + message
+
+        publisher.publish(m)
         return ''
 
     @app.route('/subscribe')
     def subscribe():
-        return flask.Response(publisher.subscribe(),
+        username = flask.request.args.get('username')
+        return flask.Response(publisher.subscribe(properties=username),
                               content_type='text/event-stream')
     @app.route('/')
     def root():
