@@ -1,0 +1,56 @@
+body {
+	background: url('pixel_weave.png') repeat;
+
+	font: 16px/150% Georgia, Times, 'Times New Roman', serif;
+	//text-indent: 20px;
+	text-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+	color: #444;
+
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
+}
+
+#chat {
+    background: #CCC;
+    padding: 5px;
+    margin: 20px 0px 5px 0px;
+	border-radius: 5px;
+}
+
+#message-div {
+    overflow: hidden;
+}
+
+#message {
+    width: 100%;
+    //box-sizing: border-box;
+}
+
+#send {
+    float: right;
+}
+
+h1, h2, h3 {
+	font-family: 'Verdana', sans-serif;
+	margin-top: 1.2em;
+	margin-bottom: .5em;
+}
+
+code {
+	font: 16px 'Consolas', 'Courier New', monospace;
+	color: #EEE;
+    background-color: #555;
+	
+	box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2);
+	border-radius: 5px;
+
+    padding: 1em;
+    margin: 1.2em 0;
+    display: block;
+
+    white-space: pre;
+    overflow: auto;
+    line-height: 1.3em;
+    text-indent: 0;
+}

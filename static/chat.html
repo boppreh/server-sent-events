@@ -1,16 +1,24 @@
+<!doctype html>
 <html>
     <head>
+        <meta charset="utf-8">
+        <title>Example Chat with Server-Sent-Events</title>
+        <link rel="stylesheet" href="style.css">
     </head>
+
     <body>
-        <h1>Server sent events</h1>
+        <h1>Example Chat with Server-Sent-Events</h1>
+
         <form onsubmit="updateSubscription()" action="javascript:void(0);">
-            <input type="text" id="username" size=12 value="Anon">
+            <input type="text" id="username" size=25 value="Anon">
             <input type="submit" value="Change name">
         </form>
+
         <div id="chat"></div>
+
         <form onsubmit="publishMessage()" action="javascript:void(0);">
-            <input type="text" id="message" size=80>
-            <input type="submit" value="Send">
+            <input type="submit" value="Send" id="send">
+            <div id="message-div"> <input type="text" id="message"> </div>
         </form>
 
         <script type="text/javascript">
