@@ -35,6 +35,10 @@ class Publisher(object):
             yield from subscriber_list
 
     def _publish_single(self, data, queue):
+        """
+        Publishes a single piece of data to a single user. Data is encoded as
+        required.
+        """
         str_data = str(data)
         for line in str_data.split('\n'):
             queue.put(line)
@@ -103,6 +107,9 @@ class Publisher(object):
 
 
     def close(self):
+        """
+        Closes all active subscriptions.
+        """
         for channel in self.subscribers_by_channel.values():
             for queue, _ in channel:
                 queue.put(Publisher.END_STREAM)
