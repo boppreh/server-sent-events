@@ -32,6 +32,11 @@ class Publisher(object):
         for subscriber_list in self._get_subscribers_lists(channel):
             yield from subscriber_list
 
+    def _publish_single(self, data, queue):
+        str_data = str(data)
+        for line in str_data.split('\n'):
+            queue.put(str_data)
+
     def publish(self, data, channel='default channel'):
         """
         Publishes data to all subscribers of the given channel.
@@ -51,10 +56,10 @@ class Publisher(object):
             for queue, properties in self.get_subscribers(channel):
                 value = data(properties)
                 if value:
-                    queue.put(str(value))
+                    self._publish_single(value, queue)
         else:
             for queue, _ in self.get_subscribers(channel):
-                queue.put(str(data))
+                self._publish_single(data, queue)
 
     def subscribe(self, channel='default channel', properties=None, initial_data=[]):
         """
