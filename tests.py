@@ -48,5 +48,15 @@ class TestPublisher(unittest.TestCase):
         self.assertEqual(self.read(s1), 'data: 1')
         self.assertEqual(self.read(s2), 'data: 2')
 
+    def test_initial_data(self):
+        p = Publisher()
+        s = p.subscribe(initial_data=['start 1', 'start 2'])
+        p.publish('test')
+        p.close()
+        self.assertEqual(self.read(s),
+                         'data: start 1\n\n'
+                         'data: start 2\n\n'
+                         'data: test')
+
 if __name__ == '__main__':
     unittest.main()
