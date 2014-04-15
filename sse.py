@@ -8,6 +8,8 @@ class Publisher(object):
     Each subscriber can have its own private data and may subscribe to
     different channel.
     """
+    END_STREAM = 'endstream'
+
     def __init__(self):
         """
         Creates a new publisher with an empty list of subscribers.
@@ -87,7 +89,16 @@ class Publisher(object):
             subscribers_list.append(subscriber)
 
         while True:
-            yield 'data: {}\n\n'.format(queue.get())
+            data = queue.get()
+            if data == Publisher.END_STREAM:
+                break
+            yield 'data: {}\n\n'.format()
+
+    def close(self):
+        for channel in self.subscribers_by_channel.values():
+            for queue, _ in channel:
+                queue.put(Publisher.END_STREAM)
+
 
 if __name__ == '__main__':
     # Starts an example chat application.
