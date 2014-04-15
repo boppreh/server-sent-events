@@ -8,7 +8,7 @@ class Publisher(object):
     Each subscriber can have its own private data and may subscribe to
     different channel.
     """
-    END_STREAM = 'endstream'
+    END_STREAM = {}
 
     def __init__(self):
         """
@@ -37,7 +37,7 @@ class Publisher(object):
     def _publish_single(self, data, queue):
         str_data = str(data)
         for line in str_data.split('\n'):
-            queue.put(str_data)
+            queue.put(line)
 
     def publish(self, data, channel='default channel'):
         """
@@ -88,11 +88,19 @@ class Publisher(object):
         for subscribers_list in self._get_subscribers_lists(channel):
             subscribers_list.append(subscriber)
 
+        return self._make_generator(queue)
+
+    def _make_generator(self, queue):
+        """
+        Returns a generator that reads data from the queue, emitting data
+        events, while the Publisher.END_STREAM value is not received.
+        """
         while True:
             data = queue.get()
-            if data == Publisher.END_STREAM:
-                break
-            yield 'data: {}\n\n'.format()
+            if data is Publisher.END_STREAM:
+                return
+            yield 'data: {}\n\n'.format(data)
+
 
     def close(self):
         for channel in self.subscribers_by_channel.values():
