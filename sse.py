@@ -113,6 +113,7 @@ class Publisher(object):
         for channel in self.subscribers_by_channel.values():
             for queue, _ in channel:
                 queue.put(Publisher.END_STREAM)
+            channel.clear()
 
 
 if __name__ == '__main__':
