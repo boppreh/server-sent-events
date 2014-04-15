@@ -12,7 +12,7 @@ class TestPublisher(unittest.TestCase):
         p.close()
         self.assertEqual(self.read(s), 'data: test')
 
-    def test_single_multiple(self):
+    def test_multiple(self):
         p = Publisher()
         s1 = p.subscribe()
         s2 = p.subscribe()
@@ -36,6 +36,17 @@ class TestPublisher(unittest.TestCase):
         self.assertEqual(self.read(s1), 'data: test1')
         self.assertEqual(self.read(s2), 'data: test2')
         self.assertEqual(self.read(s3), 'data: test1\n\ndata: test2')
+
+    def test_custom(self):
+        p = Publisher()
+        s1 = p.subscribe(properties=1)
+        s2 = p.subscribe(properties=2)
+
+        p.publish(lambda properties: properties)
+        p.close()
+
+        self.assertEqual(self.read(s1), 'data: 1')
+        self.assertEqual(self.read(s2), 'data: 2')
 
 if __name__ == '__main__':
     unittest.main()
