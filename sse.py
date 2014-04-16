@@ -41,7 +41,8 @@ class Publisher(object):
         """
         str_data = str(data)
         for line in str_data.split('\n'):
-            queue.put(line)
+            queue.put('data: {}\n'.format(line))
+        queue.put('\n')
 
     def publish(self, data, channel='default channel'):
         """
@@ -87,7 +88,7 @@ class Publisher(object):
         subscriber = (queue, properties)
 
         for data in initial_data:
-            queue.put(str(data))
+            self._publish_single(data, queue)
 
         for subscribers_list in self._get_subscribers_lists(channel):
             subscribers_list.append(subscriber)
@@ -103,7 +104,7 @@ class Publisher(object):
             data = queue.get()
             if data is Publisher.END_STREAM:
                 return
-            yield 'data: {}\n\n'.format(data)
+            yield data
 
 
     def close(self):

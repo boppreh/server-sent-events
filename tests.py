@@ -58,5 +58,12 @@ class TestPublisher(unittest.TestCase):
                          'data: start 2\n\n'
                          'data: test')
 
+    def test_multiline(self):
+        p = Publisher()
+        s = p.subscribe()
+        p.publish('line 1\nline 2')
+        p.close()
+        self.assertEqual(self.read(s), 'data: line 1\ndata: line 2')
+
 if __name__ == '__main__':
     unittest.main()
