@@ -31,7 +31,7 @@ Features
 API Overview
 ============
 
-`Publish()`
+`Publisher()`
 -----------
 Creates a new publisher with an empty list of subscribers. All following
 functions are methods of Publisher.
