@@ -1,6 +1,7 @@
 import unittest
 from sse import Publisher
 
+
 class TestPublisher(unittest.TestCase):
     def read(self, generator):
         return ''.join(generator).strip()
@@ -48,6 +49,25 @@ class TestPublisher(unittest.TestCase):
         self.assertEqual(self.read(s1), 'data: 1')
         self.assertEqual(self.read(s2), 'data: 2')
 
+    def test_unsubscribe(self):
+        p = Publisher()
+        self.assertEqual(len(p.subscribers_by_channel['default channel']), 0)
+
+        p.subscribe(properties=1)
+        p.subscribe(properties=2)
+        self.assertEqual(len(p.subscribers_by_channel['default channel']), 2)
+
+        p.unsubscribe(properties=2)
+        self.assertEqual(len(p.subscribers_by_channel['default channel']), 1)
+
+        p.subscribe(properties={'id': 3, 'eggs': 'spam'})
+        self.assertEqual(len(p.subscribers_by_channel['default channel']), 2)
+
+        p.unsubscribe(properties={'id': 3, 'eggs': 'spam'})
+        self.assertEqual(len(p.subscribers_by_channel['default channel']), 1)
+
+        p.close()
+
     def test_initial_data(self):
         p = Publisher()
         s = p.subscribe(initial_data=['start 1', 'start 2'])
@@ -64,6 +84,7 @@ class TestPublisher(unittest.TestCase):
         p.publish('line 1\nline 2')
         p.close()
         self.assertEqual(self.read(s), 'data: line 1\ndata: line 2')
+
 
 if __name__ == '__main__':
     unittest.main()

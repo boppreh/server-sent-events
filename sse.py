@@ -95,6 +95,35 @@ class Publisher(object):
 
         return self._make_generator(queue)
 
+    def unsubscribe(self, channel='default channel', properties=None):
+        """
+        `channel` can either be a channel name (e.g. "secret room") or a list
+        of channel names (e.g. "['chat', 'global messages']"). It defaults to
+        the channel named "default channel".
+        If `properties` is None, then all subscribers will be removed from selected
+        channel(s). If properties are provided then these are used to filter which
+        subscribers are removed. Only the subscribers exactly matching the properties
+        are unsubscribed.
+        """
+
+        if properties is None:
+            if isinstance(channel, str):
+                self.subscribers_by_channel[channel] = []
+            else:
+                for channel_name in channel:
+                    self.subscribers_by_channel[channel_name] = []
+
+        else:
+            if isinstance(channel, str):
+                self.subscribers_by_channel[channel] = [
+                    x for x in self.subscribers_by_channel[channel]
+                    if x[1] != properties]
+            else:
+                for channel_name in channel:
+                    self.subscribers_by_channel[channel_name] = [
+                        x for x in self.subscribers_by_channel[channel_name]
+                        if x[1] != properties]
+
     def _make_generator(self, queue):
         """
         Returns a generator that reads data from the queue, emitting data
