@@ -1,5 +1,7 @@
 from queue import Queue
-from collections import defaultdict
+from collections import defaultdict, namedtuple
+
+Subscriber = namedtuple('Subscriber', 'queue, properties')
 
 class Publisher(object):
     """
@@ -60,13 +62,13 @@ class Publisher(object):
         # `format` call. The reason is twofold: this caches the same between
         # subscribers, and is not prone to time differences.
         if callable(data):
-            for queue, properties in self.get_subscribers(channel):
-                value = data(properties)
+            for subscriber in self.get_subscribers(channel):
+                value = data(subscriber.properties)
                 if value:
-                    self._publish_single(value, queue)
+                    self._publish_single(value, subscriber.queue)
         else:
-            for queue, _ in self.get_subscribers(channel):
-                self._publish_single(data, queue)
+            for subscriber in self.get_subscribers(channel):
+                self._publish_single(data, subscriber.queue)
 
     def subscribe(self, channel='default channel', properties=None, initial_data=[]):
         """
@@ -85,7 +87,7 @@ class Publisher(object):
         """
         queue = Queue()
         properties = properties or {}
-        subscriber = (queue, properties)
+        subscriber = Subscriber(queue, properties)
 
         for data in initial_data:
             self._publish_single(data, queue)
@@ -100,29 +102,17 @@ class Publisher(object):
         `channel` can either be a channel name (e.g. "secret room") or a list
         of channel names (e.g. "['chat', 'global messages']"). It defaults to
         the channel named "default channel".
+
         If `properties` is None, then all subscribers will be removed from selected
         channel(s). If properties are provided then these are used to filter which
         subscribers are removed. Only the subscribers exactly matching the properties
         are unsubscribed.
         """
-
-        if properties is None:
-            if isinstance(channel, str):
-                self.subscribers_by_channel[channel] = []
+        for subscribers_list in self._get_subscribers_lists(channel):
+            if properties is None:
+                subscribers_list[:] = []
             else:
-                for channel_name in channel:
-                    self.subscribers_by_channel[channel_name] = []
-
-        else:
-            if isinstance(channel, str):
-                self.subscribers_by_channel[channel] = [
-                    x for x in self.subscribers_by_channel[channel]
-                    if x[1] != properties]
-            else:
-                for channel_name in channel:
-                    self.subscribers_by_channel[channel_name] = [
-                        x for x in self.subscribers_by_channel[channel_name]
-                        if x[1] != properties]
+                subscribers_list[:] = [subscriber for subscriber in subscribers_list if subscriber.properties != properties]
 
     def _make_generator(self, queue):
         """
